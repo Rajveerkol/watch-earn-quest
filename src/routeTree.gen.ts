@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CompletedRouteImport } from './routes/completed'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as WalletRouteImport } from './routes/wallet'
@@ -18,6 +19,11 @@ import { Route as TaskTaskIdRouteImport } from './routes/task.$taskId'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompletedRoute = CompletedRouteImport.update({
@@ -43,6 +49,7 @@ const TaskTaskIdRoute = TaskTaskIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/completed': typeof CompletedRoute
   '/tasks': typeof TasksRoute
   '/wallet': typeof WalletRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/completed': typeof CompletedRoute
   '/tasks': typeof TasksRoute
   '/wallet': typeof WalletRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/completed': typeof CompletedRoute
   '/tasks': typeof TasksRoute
   '/wallet': typeof WalletRoute
@@ -65,14 +74,23 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/completed' | '/tasks' | '/wallet' | '/task/$taskId'
+  fullPaths:
+    '/' | '/auth' | '/completed' | '/tasks' | '/wallet' | '/task/$taskId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/completed' | '/tasks' | '/wallet' | '/task/$taskId'
-  id: '__root__' | '/' | '/completed' | '/tasks' | '/wallet' | '/task/$taskId'
+  to: '/' | '/auth' | '/completed' | '/tasks' | '/wallet' | '/task/$taskId'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/completed'
+    | '/tasks'
+    | '/wallet'
+    | '/task/$taskId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   CompletedRoute: typeof CompletedRoute
   TasksRoute: typeof TasksRoute
   WalletRoute: typeof WalletRoute
@@ -86,6 +104,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/completed': {
@@ -121,6 +146,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   CompletedRoute: CompletedRoute,
   TasksRoute: TasksRoute,
   WalletRoute: WalletRoute,
