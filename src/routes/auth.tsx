@@ -53,13 +53,17 @@ function AuthScreen() {
     setBusy(true);
     try {
       if (mode === "signup") {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: { emailRedirectTo: `${window.location.origin}/auth` },
         });
         if (signUpError) throw signUpError;
-        setNotice("Account created. Confirm your email if prompted, then sign in.");
+        if (data.session) {
+          void navigate({ to: "/admin" });
+          return;
+        }
+        setNotice("Account created. You can sign in now.");
         setMode("signin");
         return;
       }
