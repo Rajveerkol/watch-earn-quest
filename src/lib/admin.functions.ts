@@ -117,7 +117,16 @@ export const adminDeleteTask = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const m = await guard(context);
     const { error } = await m.supabaseAdmin.from("tasks").delete().eq("id", data.id);
-    return error ? { ok: false as const, error: error.message } : { ok: true as const };
+    if (!error) return { ok: true as const };
+    // Tasks with completion history are archived instead of deleted so that a
+    // wallet can never re-earn a task by having its history removed.
+    const { error: archiveError } = await m.supabaseAdmin
+      .from("tasks")
+      .update({ status: "expired" })
+      .eq("id", data.id);
+    return archiveError
+      ? { ok: false as const, error: archiveError.message }
+      : { ok: true as const, archived: true as const };
   });
 
 const reviewInput = idInput.extend({

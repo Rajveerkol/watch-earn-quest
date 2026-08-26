@@ -125,6 +125,10 @@ export const ERROR_COPY: Record<string, string> = {
   rate_limited: "Too many attempts. Please slow down and try again.",
   invalid_session: "Your task session expired. Please start the task again.",
   too_fast: "Keep watching — the required time is not complete yet.",
+  below_minimum: "Minimum withdrawal is 5,000 coins.",
+  insufficient: "You do not have enough coins for this withdrawal.",
+  pending_exists: "You already have a withdrawal request in review.",
+  invalid_details: "Please check your account number and IFSC code.",
 };
 
 export { supabaseAdmin };
