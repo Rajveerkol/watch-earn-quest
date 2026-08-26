@@ -6,6 +6,8 @@ import {
   getFeed,
   getTaskDetail,
   getWalletOverview,
+  getWithdrawals,
+  requestWithdrawal,
   startTask,
 } from "@/lib/watch.functions";
 import { readWalletToken, writeWalletToken } from "@/lib/wallet-client";
@@ -64,6 +66,37 @@ export function useCompleteTask() {
   return useMutation({
     mutationFn: (input: { taskId: string; sessionId: string }) =>
       fn({ data: { token: readWalletToken(), ...input } }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["we"] });
+    },
+  });
+}
+
+export function useWithdrawals() {
+  const hydrated = useHydrated();
+  const fn = useServerFn(getWithdrawals);
+  return useQuery({
+    queryKey: ["we", "withdrawals"],
+    enabled: hydrated,
+    staleTime: 10_000,
+    queryFn: async () => {
+      const res = await fn({ data: { token: readWalletToken() } });
+      writeWalletToken(res.token);
+      return res;
+    },
+  });
+}
+
+export function useRequestWithdrawal() {
+  const fn = useServerFn(requestWithdrawal);
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      coins: number;
+      accountNumber: string;
+      ifscCode: string;
+      holderName: string;
+    }) => fn({ data: { token: readWalletToken(), ...input } }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["we"] });
     },

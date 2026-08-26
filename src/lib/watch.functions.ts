@@ -152,3 +152,64 @@ export const getWalletOverview = createServerFn({ method: "POST" })
       })),
     };
   });
+
+const withdrawInput = tokenInput.extend({
+  coins: z.number().int().min(5000).max(100_000_000),
+  accountNumber: z.string().trim().regex(/^\d{6,20}$/),
+  ifscCode: z
+    .string()
+    .trim()
+    .transform((v) => v.toUpperCase())
+    .refine((v) => /^[A-Z]{4}0[A-Z0-9]{6}$/.test(v), "Invalid IFSC code"),
+  holderName: z.string().trim().min(2).max(80),
+});
+
+export const requestWithdrawal = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => withdrawInput.parse(d))
+  .handler(async ({ data }) => {
+    const m = await import("./watch.server");
+    const { wallet } = await m.resolveWallet(data.token);
+    const { data: result, error } = await m.supabaseAdmin.rpc("we_request_withdrawal", {
+      p_wallet: wallet.id,
+      p_coins: data.coins,
+      p_account: data.accountNumber,
+      p_ifsc: data.ifscCode,
+      p_holder: data.holderName,
+    });
+    if (error) return { ok: false as const, error: "Something went wrong. Please try again." };
+    const payload = result as { ok: boolean; error?: string; balance?: number };
+    if (!payload.ok) {
+      return {
+        ok: false as const,
+        error: m.ERROR_COPY[payload.error ?? ""] ?? "Withdrawal could not be created.",
+      };
+    }
+    return { ok: true as const, balance: Number(payload.balance ?? 0) };
+  });
+
+export const getWithdrawals = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => tokenInput.parse(d))
+  .handler(async ({ data }) => {
+    const m = await import("./watch.server");
+    const { wallet, token } = await m.resolveWallet(data.token);
+    const { data: rows } = await m.supabaseAdmin
+      .from("withdrawals")
+      .select("id, coins, account_number, ifsc_code, holder_name, status, admin_note, created_at")
+      .eq("wallet_id", wallet.id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    return {
+      token,
+      balance: Number(wallet.balance),
+      withdrawals: (rows ?? []).map((r) => ({
+        id: r.id,
+        coins: Number(r.coins),
+        accountLast4: r.account_number.slice(-4),
+        ifscCode: r.ifsc_code,
+        holderName: r.holder_name,
+        status: r.status,
+        adminNote: r.admin_note,
+        createdAt: r.created_at,
+      })),
+    };
+  });
