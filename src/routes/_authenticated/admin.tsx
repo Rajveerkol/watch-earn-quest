@@ -15,6 +15,10 @@ import {
   ShieldCheck,
   Trash2,
   TrendingUp,
+  Banknote,
+  BadgeCheck,
+  Clock3,
+  XCircle,
 } from "lucide-react";
 import {
   Area,
@@ -30,6 +34,8 @@ import {
 
 import {
   adminDeleteTask,
+  adminListWithdrawals,
+  adminReviewWithdrawal,
   adminListTasks,
   adminOverview,
   adminSaveTask,
@@ -235,6 +241,9 @@ function AdminConsole() {
           </TabsTrigger>
           <TabsTrigger value="tasks" className="flex-1 rounded-xl text-xs font-semibold">
             Tasks
+          </TabsTrigger>
+          <TabsTrigger value="payouts" className="flex-1 rounded-xl text-xs font-semibold">
+            Payouts
           </TabsTrigger>
         </TabsList>
 
@@ -494,6 +503,10 @@ function AdminConsole() {
             </div>
           )}
         </TabsContent>
+
+        <TabsContent value="payouts" className="mt-4">
+          <PayoutsPanel />
+        </TabsContent>
       </Tabs>
 
       <Dialog open={form !== null} onOpenChange={(open) => !open && setForm(null)}>
@@ -706,5 +719,108 @@ function ActionButton({
       <Icon className="size-3.5" />
       {label}
     </button>
+  );
+}
+
+function PayoutsPanel() {
+  const queryClient = useQueryClient();
+  const listFn = useServerFn(adminListWithdrawals);
+  const reviewFn = useServerFn(adminReviewWithdrawal);
+  const [note, setNote] = useState("");
+
+  const list = useQuery({
+    queryKey: ["admin", "withdrawals"],
+    queryFn: () => listFn({ data: undefined }),
+  });
+
+  const review = useMutation({
+    mutationFn: (input: { id: string; status: "approved" | "rejected" | "paid" }) =>
+      reviewFn({ data: { ...input, note: note.trim() ? note.trim() : null } }),
+    onSuccess: () => {
+      setNote("");
+      void queryClient.invalidateQueries({ queryKey: ["admin"] });
+    },
+  });
+
+  if (list.isPending) {
+    return (
+      <div className="space-y-3">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} className="h-24 rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
+
+  const rows = list.data ?? [];
+  if (rows.length === 0) {
+    return (
+      <div className="rounded-3xl p-8 text-center surface-card">
+        <Banknote className="mx-auto size-6 text-muted-foreground" />
+        <p className="mt-3 text-sm font-semibold">No withdrawal requests yet</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Requests appear here as soon as a viewer cashes out coins.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <Input
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder="Optional note attached to your next decision"
+        className="h-11 rounded-xl"
+      />
+      {rows.map((w) => (
+        <div key={w.id} className="rounded-2xl p-4 surface-card">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-2">
+              {w.status === "pending" ? (
+                <Clock3 className="size-4 text-warning" />
+              ) : w.status === "rejected" ? (
+                <XCircle className="size-4 text-destructive" />
+              ) : (
+                <BadgeCheck className="size-4 text-success" />
+              )}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold tabular-nums">{formatCoins(w.coins)} coins</p>
+              <p className="text-[11px] text-muted-foreground">
+                {w.holderName} · {w.accountNumber} · {w.ifscCode}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                {w.walletCode} · {new Date(w.createdAt).toLocaleString("en-IN")}
+              </p>
+              {w.adminNote ? (
+                <p className="mt-1 text-[11px] text-muted-foreground">Note: {w.adminNote}</p>
+              ) : null}
+            </div>
+            <span className="shrink-0 rounded-full bg-surface-2 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">
+              {w.status}
+            </span>
+          </div>
+          {w.status === "pending" ? (
+            <div className="mt-3 flex gap-2">
+              <button
+                disabled={review.isPending}
+                onClick={() => review.mutate({ id: w.id, status: "paid" })}
+                className="press flex-1 rounded-xl bg-success/15 py-2.5 text-xs font-bold text-success"
+              >
+                Mark paid
+              </button>
+              <button
+                disabled={review.isPending}
+                onClick={() => review.mutate({ id: w.id, status: "rejected" })}
+                className="press flex-1 rounded-xl bg-destructive/15 py-2.5 text-xs font-bold text-destructive"
+              >
+                Reject &amp; refund
+              </button>
+            </div>
+          ) : null}
+        </div>
+      ))}
+    </div>
   );
 }
