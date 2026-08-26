@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CompletedRouteImport } from './routes/completed'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as WithdrawRouteImport } from './routes/withdraw'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as TaskTaskIdRouteImport } from './routes/task.$taskId'
 
@@ -47,6 +48,11 @@ const WalletRoute = WalletRouteImport.update({
   path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WithdrawRoute = WithdrawRouteImport.update({
+  id: '/withdraw',
+  path: '/withdraw',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/completed': typeof CompletedRoute
   '/tasks': typeof TasksRoute
   '/wallet': typeof WalletRoute
+  '/withdraw': typeof WithdrawRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/task/$taskId': typeof TaskTaskIdRoute
 }
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/completed': typeof CompletedRoute
   '/tasks': typeof TasksRoute
   '/wallet': typeof WalletRoute
+  '/withdraw': typeof WithdrawRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/task/$taskId': typeof TaskTaskIdRoute
 }
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/completed': typeof CompletedRoute
   '/tasks': typeof TasksRoute
   '/wallet': typeof WalletRoute
+  '/withdraw': typeof WithdrawRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/task/$taskId': typeof TaskTaskIdRoute
 }
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/completed'
     | '/tasks'
     | '/wallet'
+    | '/withdraw'
     | '/admin'
     | '/task/$taskId'
   fileRoutesByTo: FileRoutesByTo
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
     | '/completed'
     | '/tasks'
     | '/wallet'
+    | '/withdraw'
     | '/admin'
     | '/task/$taskId'
   id:
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '/completed'
     | '/tasks'
     | '/wallet'
+    | '/withdraw'
     | '/_authenticated/admin'
     | '/task/$taskId'
   fileRoutesById: FileRoutesById
@@ -125,6 +137,7 @@ export interface RootRouteChildren {
   CompletedRoute: typeof CompletedRoute
   TasksRoute: typeof TasksRoute
   WalletRoute: typeof WalletRoute
+  WithdrawRoute: typeof WithdrawRoute
   TaskTaskIdRoute: typeof TaskTaskIdRoute
 }
 
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/withdraw': {
+      id: '/withdraw'
+      path: '/withdraw'
+      fullPath: '/withdraw'
+      preLoaderRoute: typeof WithdrawRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -207,6 +227,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompletedRoute: CompletedRoute,
   TasksRoute: TasksRoute,
   WalletRoute: WalletRoute,
+  WithdrawRoute: WithdrawRoute,
   TaskTaskIdRoute: TaskTaskIdRoute,
 }
 export const routeTree = rootRouteImport

@@ -166,7 +166,7 @@ export const adminReviewWithdrawal = createServerFn({ method: "POST" })
     const { data: result, error } = await m.supabaseAdmin.rpc("we_review_withdrawal", {
       p_id: data.id,
       p_status: data.status,
-      p_note: data.note,
+      p_note: data.note ?? "",
     });
     if (error) return { ok: false as const, error: error.message };
     const payload = result as { ok: boolean; error?: string };
