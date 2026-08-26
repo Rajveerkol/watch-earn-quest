@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowDownLeft, Check, Coins, Copy, Receipt, ShieldCheck } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Banknote, Check, Coins, Copy, Receipt, ShieldCheck } from "lucide-react";
 
 import { AppShell, EmptyState, ScreenHeader } from "@/components/we/app-shell";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -100,6 +100,18 @@ function WalletScreen() {
             )}
           </div>
         </div>
+
+        <Link
+          to="/withdraw"
+          className="press mt-4 flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold text-primary-foreground brand-gradient"
+        >
+          <Banknote className="size-4" />
+          Withdraw coins
+          <ArrowUpRight className="size-4" />
+        </Link>
+        <p className="mt-2 text-center text-[11px] text-muted-foreground">
+          Minimum {formatCoins(5000)} coins per withdrawal
+        </p>
 
         <p className="mt-4 flex items-center gap-1.5 text-[11px] text-muted-foreground">
           <ShieldCheck className="size-3.5 text-success" />

@@ -117,5 +117,58 @@ export const adminDeleteTask = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const m = await guard(context);
     const { error } = await m.supabaseAdmin.from("tasks").delete().eq("id", data.id);
-    return error ? { ok: false as const, error: error.message } : { ok: true as const };
+    if (!error) return { ok: true as const };
+    // Tasks with completion history are archived instead of deleted so that a
+    // wallet can never re-earn a task by having its history removed.
+    const { error: archiveError } = await m.supabaseAdmin
+      .from("tasks")
+      .update({ status: "expired" })
+      .eq("id", data.id);
+    return archiveError
+      ? { ok: false as const, error: archiveError.message }
+      : { ok: true as const, archived: true as const };
+  });
+
+const reviewInput = idInput.extend({
+  status: z.enum(["approved", "rejected", "paid"]),
+  note: z.string().trim().max(300).nullable(),
+});
+
+export const adminListWithdrawals = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const m = await guard(context);
+    const { data } = await m.supabaseAdmin
+      .from("withdrawals")
+      .select(
+        "id, coins, account_number, ifsc_code, holder_name, status, admin_note, created_at, wallets(wallet_code)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(200);
+    return (data ?? []).map((r) => ({
+      id: r.id,
+      coins: Number(r.coins),
+      accountNumber: r.account_number,
+      ifscCode: r.ifsc_code,
+      holderName: r.holder_name,
+      status: r.status,
+      adminNote: r.admin_note,
+      createdAt: r.created_at,
+      walletCode: (r.wallets as { wallet_code: string } | null)?.wallet_code ?? "—",
+    }));
+  });
+
+export const adminReviewWithdrawal = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => reviewInput.parse(d))
+  .handler(async ({ context, data }) => {
+    const m = await guard(context);
+    const { data: result, error } = await m.supabaseAdmin.rpc("we_review_withdrawal", {
+      p_id: data.id,
+      p_status: data.status,
+      p_note: data.note ?? "",
+    });
+    if (error) return { ok: false as const, error: error.message };
+    const payload = result as { ok: boolean; error?: string };
+    return payload.ok ? { ok: true as const } : { ok: false as const, error: payload.error ?? "failed" };
   });

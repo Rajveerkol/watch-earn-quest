@@ -235,6 +235,53 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawals: {
+        Row: {
+          account_number: string
+          admin_note: string | null
+          coins: number
+          created_at: string
+          holder_name: string
+          id: string
+          ifsc_code: string
+          status: string
+          updated_at: string
+          wallet_id: string
+        }
+        Insert: {
+          account_number: string
+          admin_note?: string | null
+          coins: number
+          created_at?: string
+          holder_name: string
+          id?: string
+          ifsc_code: string
+          status?: string
+          updated_at?: string
+          wallet_id: string
+        }
+        Update: {
+          account_number?: string
+          admin_note?: string | null
+          coins?: number
+          created_at?: string
+          holder_name?: string
+          id?: string
+          ifsc_code?: string
+          status?: string
+          updated_at?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawals_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -249,6 +296,20 @@ export type Database = {
       }
       we_complete_task: {
         Args: { p_session: string; p_task: string; p_wallet: string }
+        Returns: Json
+      }
+      we_request_withdrawal: {
+        Args: {
+          p_account: string
+          p_coins: number
+          p_holder: string
+          p_ifsc: string
+          p_wallet: string
+        }
+        Returns: Json
+      }
+      we_review_withdrawal: {
+        Args: { p_id: string; p_note: string; p_status: string }
         Returns: Json
       }
       we_start_session: {
