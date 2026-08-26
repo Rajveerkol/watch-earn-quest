@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CompletedRouteImport } from './routes/completed'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as TaskTaskIdRouteImport } from './routes/task.$taskId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const WalletRoute = WalletRouteImport.update({
   path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TaskTaskIdRoute = TaskTaskIdRouteImport.update({
+  id: '/task/$taskId',
+  path: '/task/$taskId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/completed': typeof CompletedRoute
   '/tasks': typeof TasksRoute
   '/wallet': typeof WalletRoute
+  '/task/$taskId': typeof TaskTaskIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/completed': typeof CompletedRoute
   '/tasks': typeof TasksRoute
   '/wallet': typeof WalletRoute
+  '/task/$taskId': typeof TaskTaskIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/completed': typeof CompletedRoute
   '/tasks': typeof TasksRoute
   '/wallet': typeof WalletRoute
+  '/task/$taskId': typeof TaskTaskIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/completed' | '/tasks' | '/wallet'
+  fullPaths: '/' | '/completed' | '/tasks' | '/wallet' | '/task/$taskId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/completed' | '/tasks' | '/wallet'
-  id: '__root__' | '/' | '/completed' | '/tasks' | '/wallet'
+  to: '/' | '/completed' | '/tasks' | '/wallet' | '/task/$taskId'
+  id: '__root__' | '/' | '/completed' | '/tasks' | '/wallet' | '/task/$taskId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +76,7 @@ export interface RootRouteChildren {
   CompletedRoute: typeof CompletedRoute
   TasksRoute: typeof TasksRoute
   WalletRoute: typeof WalletRoute
+  TaskTaskIdRoute: typeof TaskTaskIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/task/$taskId': {
+      id: '/task/$taskId'
+      path: '/task/$taskId'
+      fullPath: '/task/$taskId'
+      preLoaderRoute: typeof TaskTaskIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompletedRoute: CompletedRoute,
   TasksRoute: TasksRoute,
   WalletRoute: WalletRoute,
+  TaskTaskIdRoute: TaskTaskIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
