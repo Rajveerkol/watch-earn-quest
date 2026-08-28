@@ -10,8 +10,19 @@ import {
   requestWithdrawal,
   startTask,
 } from "@/lib/watch.functions";
-import { readWalletToken, writeWalletToken } from "@/lib/wallet-client";
+import { getMyAccount } from "@/lib/account.functions";
 import { useHydrated } from "@/hooks/use-hydrated";
+
+export function useAccount() {
+  const hydrated = useHydrated();
+  const fn = useServerFn(getMyAccount);
+  return useQuery({
+    queryKey: ["we", "account"],
+    enabled: hydrated,
+    staleTime: 30_000,
+    queryFn: () => fn(),
+  });
+}
 
 export function useFeed() {
   const hydrated = useHydrated();
@@ -20,11 +31,7 @@ export function useFeed() {
     queryKey: ["we", "feed"],
     enabled: hydrated,
     staleTime: 15_000,
-    queryFn: async () => {
-      const res = await fn({ data: { token: readWalletToken() } });
-      writeWalletToken(res.token);
-      return res;
-    },
+    queryFn: () => fn(),
   });
 }
 
@@ -35,11 +42,7 @@ export function useWalletOverview() {
     queryKey: ["we", "wallet"],
     enabled: hydrated,
     staleTime: 10_000,
-    queryFn: async () => {
-      const res = await fn({ data: { token: readWalletToken() } });
-      writeWalletToken(res.token);
-      return res;
-    },
+    queryFn: () => fn(),
   });
 }
 
@@ -49,14 +52,14 @@ export function useTaskDetail(taskId: string) {
   return useQuery({
     queryKey: ["we", "task", taskId],
     enabled: hydrated,
-    queryFn: () => fn({ data: { token: readWalletToken(), taskId } }),
+    queryFn: () => fn({ data: { taskId } }),
   });
 }
 
 export function useStartTask() {
   const fn = useServerFn(startTask);
   return useMutation({
-    mutationFn: (taskId: string) => fn({ data: { token: readWalletToken(), taskId } }),
+    mutationFn: (taskId: string) => fn({ data: { taskId } }),
   });
 }
 
@@ -64,8 +67,7 @@ export function useCompleteTask() {
   const fn = useServerFn(completeTask);
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: { taskId: string; sessionId: string }) =>
-      fn({ data: { token: readWalletToken(), ...input } }),
+    mutationFn: (input: { taskId: string; sessionId: string }) => fn({ data: input }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["we"] });
     },
@@ -79,11 +81,7 @@ export function useWithdrawals() {
     queryKey: ["we", "withdrawals"],
     enabled: hydrated,
     staleTime: 10_000,
-    queryFn: async () => {
-      const res = await fn({ data: { token: readWalletToken() } });
-      writeWalletToken(res.token);
-      return res;
-    },
+    queryFn: () => fn(),
   });
 }
 
@@ -96,7 +94,7 @@ export function useRequestWithdrawal() {
       accountNumber: string;
       ifscCode: string;
       holderName: string;
-    }) => fn({ data: { token: readWalletToken(), ...input } }),
+    }) => fn({ data: input }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["we"] });
     },
