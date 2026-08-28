@@ -132,3 +132,42 @@ export const ERROR_COPY: Record<string, string> = {
 };
 
 export { supabaseAdmin };
+
+/** Resolves (or creates) the single wallet that belongs to a signed-in account. */
+export async function resolveWalletForUser(userId: string): Promise<WalletRow> {
+  const select = "id, wallet_code, balance, total_earned, created_at";
+
+  const { data: existing } = await supabaseAdmin
+    .from("wallets")
+    .select(select)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (existing) {
+    await supabaseAdmin
+      .from("wallets")
+      .update({ last_seen_at: new Date().toISOString() })
+      .eq("id", existing.id);
+    return existing as WalletRow;
+  }
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const { data, error } = await supabaseAdmin
+      .from("wallets")
+      .insert({
+        wallet_code: newWalletCode(),
+        token_hash: await sha256hex(newWalletToken()),
+        user_id: userId,
+      })
+      .select(select)
+      .single();
+    if (!error && data) return data as WalletRow;
+
+    const { data: raced } = await supabaseAdmin
+      .from("wallets")
+      .select(select)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (raced) return raced as WalletRow;
+  }
+  throw new Error("Could not open your wallet. Please try again.");
+}
