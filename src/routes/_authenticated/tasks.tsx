@@ -7,7 +7,7 @@ import { TaskCard, TaskCardSkeleton } from "@/components/we/task-card";
 import { useFeed } from "@/lib/use-watch";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/tasks")({
+export const Route = createFileRoute("/_authenticated/tasks")({
   head: () => ({
     meta: [
       { title: "Tasks — WATCH EARN" },

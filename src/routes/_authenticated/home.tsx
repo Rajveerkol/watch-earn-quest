@@ -8,7 +8,7 @@ import { useFeed } from "@/lib/use-watch";
 import { relativeTime } from "@/lib/wallet-client";
 import { formatCoins } from "@/lib/youtube";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
     meta: [
       { title: "WATCH EARN — Earn Virtual Coins For Simple Tasks" },

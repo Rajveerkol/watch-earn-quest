@@ -7,7 +7,7 @@ import { useWalletOverview } from "@/lib/use-watch";
 import { formatDateTime } from "@/lib/wallet-client";
 import { formatCoins, thumbnailFor } from "@/lib/youtube";
 
-export const Route = createFileRoute("/completed")({
+export const Route = createFileRoute("/_authenticated/completed")({
   head: () => ({
     meta: [
       { title: "Completed Tasks — WATCH EARN" },

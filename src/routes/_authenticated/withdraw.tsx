@@ -22,7 +22,7 @@ import { COINS_PER_RUPEE, formatCoins } from "@/lib/youtube";
 
 const MIN_WITHDRAW = 5000;
 
-export const Route = createFileRoute("/withdraw")({
+export const Route = createFileRoute("/_authenticated/withdraw")({
   head: () => ({
     meta: [
       { title: "Withdraw Coins — WATCH EARN" },
