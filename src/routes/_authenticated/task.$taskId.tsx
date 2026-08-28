@@ -23,7 +23,7 @@ import { useCompleteTask, useStartTask, useTaskDetail } from "@/lib/use-watch";
 import { cn } from "@/lib/utils";
 import { formatCoins, formatDuration, thumbnailFor } from "@/lib/youtube";
 
-export const Route = createFileRoute("/task/$taskId")({
+export const Route = createFileRoute("/_authenticated/task/$taskId")({
   head: () => ({
     meta: [
       { title: "Task — WATCH EARN" },

@@ -1,15 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
-const tokenInput = z.object({ token: z.string().max(200).nullable() });
-const taskInput = tokenInput.extend({ taskId: z.string().uuid() });
+const taskInput = z.object({ taskId: z.string().uuid() });
 const completeInput = taskInput.extend({ sessionId: z.string().uuid() });
 
 export const getFeed = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => tokenInput.parse(d))
-  .handler(async ({ data }) => {
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
     const m = await import("./watch.server");
-    const { wallet, token } = await m.resolveWallet(data.token);
+    const wallet = await m.resolveWalletForUser(context.userId);
     const [tasks, activity] = await Promise.all([
       m.listLiveTasks(wallet.id),
       m.supabaseAdmin
@@ -20,7 +20,6 @@ export const getFeed = createServerFn({ method: "POST" })
         .limit(4),
     ]);
     return {
-      token,
       wallet: {
         code: wallet.wallet_code,
         balance: Number(wallet.balance),
@@ -37,10 +36,11 @@ export const getFeed = createServerFn({ method: "POST" })
   });
 
 export const getTaskDetail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => taskInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const m = await import("./watch.server");
-    const { wallet } = await m.resolveWallet(data.token);
+    const wallet = await m.resolveWalletForUser(context.userId);
     const tasks = await m.listLiveTasks(wallet.id);
     const task = tasks.find((t) => t.id === data.taskId) ?? null;
     const { data: openSession } = await m.supabaseAdmin
@@ -59,10 +59,11 @@ export const getTaskDetail = createServerFn({ method: "POST" })
   });
 
 export const startTask = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => taskInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const m = await import("./watch.server");
-    const { wallet } = await m.resolveWallet(data.token);
+    const wallet = await m.resolveWalletForUser(context.userId);
     const { data: result, error } = await m.supabaseAdmin.rpc("we_start_session", {
       p_wallet: wallet.id,
       p_task: data.taskId,
@@ -79,10 +80,11 @@ export const startTask = createServerFn({ method: "POST" })
   });
 
 export const completeTask = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => completeInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const m = await import("./watch.server");
-    const { wallet } = await m.resolveWallet(data.token);
+    const wallet = await m.resolveWalletForUser(context.userId);
     const { data: result, error } = await m.supabaseAdmin.rpc("we_complete_task", {
       p_wallet: wallet.id,
       p_task: data.taskId,
@@ -109,10 +111,10 @@ export const completeTask = createServerFn({ method: "POST" })
   });
 
 export const getWalletOverview = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => tokenInput.parse(d))
-  .handler(async ({ data }) => {
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
     const m = await import("./watch.server");
-    const { wallet, token } = await m.resolveWallet(data.token);
+    const wallet = await m.resolveWalletForUser(context.userId);
     const [txns, comps] = await Promise.all([
       m.supabaseAdmin
         .from("transactions")
@@ -128,7 +130,6 @@ export const getWalletOverview = createServerFn({ method: "POST" })
         .limit(50),
     ]);
     return {
-      token,
       wallet: {
         code: wallet.wallet_code,
         balance: Number(wallet.balance),
@@ -153,7 +154,7 @@ export const getWalletOverview = createServerFn({ method: "POST" })
     };
   });
 
-const withdrawInput = tokenInput.extend({
+const withdrawInput = z.object({
   coins: z.number().int().min(5000).max(100_000_000),
   accountNumber: z.string().trim().regex(/^\d{6,20}$/),
   ifscCode: z
@@ -165,10 +166,11 @@ const withdrawInput = tokenInput.extend({
 });
 
 export const requestWithdrawal = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => withdrawInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const m = await import("./watch.server");
-    const { wallet } = await m.resolveWallet(data.token);
+    const wallet = await m.resolveWalletForUser(context.userId);
     const { data: result, error } = await m.supabaseAdmin.rpc("we_request_withdrawal", {
       p_wallet: wallet.id,
       p_coins: data.coins,
@@ -188,10 +190,10 @@ export const requestWithdrawal = createServerFn({ method: "POST" })
   });
 
 export const getWithdrawals = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => tokenInput.parse(d))
-  .handler(async ({ data }) => {
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
     const m = await import("./watch.server");
-    const { wallet, token } = await m.resolveWallet(data.token);
+    const wallet = await m.resolveWalletForUser(context.userId);
     const { data: rows } = await m.supabaseAdmin
       .from("withdrawals")
       .select("id, coins, account_number, ifsc_code, holder_name, status, admin_note, created_at")
@@ -199,7 +201,6 @@ export const getWithdrawals = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(50);
     return {
-      token,
       balance: Number(wallet.balance),
       withdrawals: (rows ?? []).map((r) => ({
         id: r.id,

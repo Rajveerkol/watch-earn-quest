@@ -9,7 +9,7 @@ import { useWalletOverview } from "@/lib/use-watch";
 import { formatDateTime } from "@/lib/wallet-client";
 import { COINS_PER_RUPEE, formatCoins } from "@/lib/youtube";
 
-export const Route = createFileRoute("/wallet")({
+export const Route = createFileRoute("/_authenticated/wallet")({
   head: () => ({
     meta: [
       { title: "My Wallet — WATCH EARN" },

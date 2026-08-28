@@ -62,48 +62,48 @@
 
 :root {
   --radius: 1.1rem;
-  --background: oklch(0.16 0.032 271);
-  --foreground: oklch(0.972 0.008 275);
-  --surface: oklch(0.211 0.036 272);
-  --surface-2: oklch(0.253 0.042 274);
-  --card: oklch(0.211 0.036 272);
-  --card-foreground: oklch(0.972 0.008 275);
-  --popover: oklch(0.211 0.036 272);
-  --popover-foreground: oklch(0.972 0.008 275);
-  --primary: oklch(0.63 0.204 293);
-  --primary-foreground: oklch(0.99 0.005 280);
-  --secondary: oklch(0.28 0.045 274);
-  --secondary-foreground: oklch(0.95 0.01 275);
-  --muted: oklch(0.26 0.038 273);
-  --muted-foreground: oklch(0.706 0.032 274);
-  --accent: oklch(0.7 0.155 195);
-  --accent-foreground: oklch(0.17 0.03 271);
-  --destructive: oklch(0.61 0.216 20);
-  --destructive-foreground: oklch(0.98 0.005 280);
-  --success: oklch(0.72 0.165 156);
-  --success-foreground: oklch(0.17 0.03 271);
-  --coin: oklch(0.82 0.155 84);
-  --coin-foreground: oklch(0.2 0.04 60);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.63 0.204 293);
-  --chart-1: oklch(0.63 0.204 293);
-  --chart-2: oklch(0.7 0.155 195);
-  --chart-3: oklch(0.82 0.155 84);
-  --chart-4: oklch(0.72 0.165 156);
+  --background: oklch(0.985 0.006 250);
+  --foreground: oklch(0.22 0.045 258);
+  --surface: oklch(1 0 0);
+  --surface-2: oklch(0.968 0.014 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.045 258);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.045 258);
+  --primary: oklch(0.55 0.19 258);
+  --primary-foreground: oklch(0.99 0.004 250);
+  --secondary: oklch(0.955 0.02 250);
+  --secondary-foreground: oklch(0.32 0.07 258);
+  --muted: oklch(0.962 0.014 250);
+  --muted-foreground: oklch(0.52 0.038 254);
+  --accent: oklch(0.72 0.13 232);
+  --accent-foreground: oklch(0.24 0.05 258);
+  --destructive: oklch(0.585 0.216 20);
+  --destructive-foreground: oklch(0.99 0.004 250);
+  --success: oklch(0.62 0.14 160);
+  --success-foreground: oklch(0.99 0.004 250);
+  --coin: oklch(0.62 0.16 250);
+  --coin-foreground: oklch(0.99 0.004 250);
+  --border: oklch(0.42 0.06 258 / 12%);
+  --input: oklch(0.42 0.06 258 / 18%);
+  --ring: oklch(0.55 0.19 258);
+  --chart-1: oklch(0.55 0.19 258);
+  --chart-2: oklch(0.72 0.13 232);
+  --chart-3: oklch(0.62 0.14 160);
+  --chart-4: oklch(0.66 0.16 288);
   --chart-5: oklch(0.66 0.19 20);
-  --sidebar: oklch(0.19 0.034 272);
-  --sidebar-foreground: oklch(0.95 0.01 275);
-  --sidebar-primary: oklch(0.63 0.204 293);
-  --sidebar-primary-foreground: oklch(0.99 0.005 280);
-  --sidebar-accent: oklch(0.26 0.038 273);
-  --sidebar-accent-foreground: oklch(0.95 0.01 275);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.63 0.204 293);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.28 0.05 258);
+  --sidebar-primary: oklch(0.55 0.19 258);
+  --sidebar-primary-foreground: oklch(0.99 0.004 250);
+  --sidebar-accent: oklch(0.962 0.014 250);
+  --sidebar-accent-foreground: oklch(0.28 0.05 258);
+  --sidebar-border: oklch(0.42 0.06 258 / 12%);
+  --sidebar-ring: oklch(0.55 0.19 258);
 }
 
 .dark {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 @layer base {
@@ -132,28 +132,35 @@
 }
 
 @utility surface-card {
-  background-image: linear-gradient(
-    160deg,
-    color-mix(in oklab, var(--surface-2) 92%, transparent),
-    var(--surface)
-  );
+  background-image: linear-gradient(165deg, oklch(1 0 0), color-mix(in oklab, var(--surface-2) 70%, white));
   border: 1px solid var(--border);
   box-shadow:
-    0 1px 0 0 oklch(1 0 0 / 6%) inset,
-    0 18px 40px -24px oklch(0 0 0 / 70%);
+    0 1px 0 0 oklch(1 0 0 / 80%) inset,
+    0 10px 24px -18px oklch(0.45 0.12 258 / 45%),
+    0 2px 6px -4px oklch(0.45 0.12 258 / 25%);
+}
+
+@utility surface-glass {
+  background-color: oklch(1 0 0 / 82%);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 30px -18px oklch(0.45 0.12 258 / 40%);
 }
 
 @utility brand-gradient {
   background-image: linear-gradient(
     135deg,
-    oklch(0.63 0.204 293),
-    oklch(0.6 0.19 328) 55%,
-    oklch(0.7 0.155 195)
+    oklch(0.5 0.2 262),
+    oklch(0.56 0.19 252) 55%,
+    oklch(0.7 0.14 228)
   );
 }
 
+@utility brand-soft {
+  background-image: linear-gradient(150deg, oklch(0.95 0.03 250), oklch(0.97 0.02 235));
+}
+
 @utility coin-gradient {
-  background-image: linear-gradient(135deg, oklch(0.88 0.13 92), oklch(0.78 0.16 66));
+  background-image: linear-gradient(135deg, oklch(0.66 0.17 255), oklch(0.74 0.13 228));
 }
 
 @utility text-balance-tight {
