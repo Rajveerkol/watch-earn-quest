@@ -53,6 +53,30 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
       task_sessions: {
         Row: {
           completed_at: string | null
@@ -213,6 +237,7 @@ export type Database = {
           last_seen_at: string
           token_hash: string
           total_earned: number
+          user_id: string | null
           wallet_code: string
         }
         Insert: {
@@ -222,6 +247,7 @@ export type Database = {
           last_seen_at?: string
           token_hash: string
           total_earned?: number
+          user_id?: string | null
           wallet_code: string
         }
         Update: {
@@ -231,6 +257,7 @@ export type Database = {
           last_seen_at?: string
           token_hash?: string
           total_earned?: number
+          user_id?: string | null
           wallet_code?: string
         }
         Relationships: []
